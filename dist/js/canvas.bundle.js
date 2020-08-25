@@ -111,8 +111,7 @@ canvas.height = innerHeight;
 var mouse = {
   x: innerWidth / 2,
   y: innerHeight / 2
-};
-var colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']; // Event Listeners
+}; // Event Listeners
 
 addEventListener('mousemove', function (event) {
   mouse.x = event.clientX;
@@ -124,17 +123,19 @@ addEventListener('resize', function () {
   init();
 }); // Objects
 
-var _Object = /*#__PURE__*/function () {
-  function Object(x, y, radius, color) {
-    _classCallCheck(this, Object);
+var Particle = /*#__PURE__*/function () {
+  function Particle(x, y, radius, color, velocity) {
+    _classCallCheck(this, Particle);
 
     this.x = x;
     this.y = y;
     this.radius = radius;
     this.color = color;
+    this.velocity = velocity;
+    this.ttl = 1000;
   }
 
-  _createClass(Object, [{
+  _createClass(Particle, [{
     key: "draw",
     value: function draw() {
       c.beginPath();
@@ -147,33 +148,60 @@ var _Object = /*#__PURE__*/function () {
     key: "update",
     value: function update() {
       this.draw();
+      this.x += this.velocity.x;
+      this.y += this.velocity.y;
+      this.ttl--;
     }
   }]);
 
-  return Object;
+  return Particle;
 }(); // Implementation
 
 
-var objects;
+var particles;
 
 function init() {
-  objects = [];
+  particles = [];
+}
 
-  for (var i = 0; i < 400; i++) {// objects.push()
+var hue = 0;
+var hueRadians = 0;
+
+function generateRing() {
+  setTimeout(generateRing, 200);
+  hue = Math.sin(hueRadians);
+  var particleCount = 30;
+
+  for (var i = 0; i < particleCount; i++) {
+    var radians = Math.PI * 2 / particleCount;
+    var x = mouse.x;
+    var y = mouse.y;
+    particles.push(new Particle(x, y, 5, "hsl(".concat(Math.abs(hue * 360), ", 50%, 50%)"), {
+      x: Math.cos(radians * i),
+      y: Math.sin(radians * i)
+    }));
   }
+
+  hueRadians += 0.01;
 } // Animation Loop
 
 
 function animate() {
   requestAnimationFrame(animate);
-  c.clearRect(0, 0, canvas.width, canvas.height);
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y); // objects.forEach(object => {
-  //  object.update()
-  // })
+  c.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  c.fillRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(function (particle, index) {
+    if (particle.ttl < 0) {
+      particles.splice(index, 1);
+    } else {
+      particle.update();
+    }
+  });
 }
 
 init();
 animate();
+generateRing();
 
 /***/ }),
 

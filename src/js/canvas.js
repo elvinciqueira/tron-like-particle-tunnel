@@ -11,8 +11,6 @@ const mouse = {
   y: innerHeight / 2
 }
 
-const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
-
 // Event Listeners
 addEventListener('mousemove', (event) => {
   mouse.x = event.clientX
@@ -27,12 +25,14 @@ addEventListener('resize', () => {
 })
 
 // Objects
-class Object {
-  constructor(x, y, radius, color) {
+class Particle {
+  constructor(x, y, radius, color, velocity) {
     this.x = x
     this.y = y
     this.radius = radius
     this.color = color
+    this.velocity = velocity
+    this.ttl = 1000
   }
 
   draw() {
@@ -45,29 +45,58 @@ class Object {
 
   update() {
     this.draw()
+    this.x += this.velocity.x
+    this.y += this.velocity.y
+    this.ttl--
   }
 }
 
 // Implementation
-let objects
-function init() {
-  objects = []
+let particles
 
-  for (let i = 0; i < 400; i++) {
-    // objects.push()
+function init() {
+  particles = []
+}
+
+let hue = 0
+let hueRadians = 0
+
+function generateRing() {
+  setTimeout(generateRing, 200)
+
+  hue = Math.sin(hueRadians)
+  const particleCount = 30
+
+  for (let i = 0; i < particleCount; i++) {
+    const radians = Math.PI * 2 / particleCount
+    const x = mouse.x
+    const y = mouse.y
+
+    particles.push(new Particle(x, y, 5, `hsl(${Math.abs(hue * 360)}, 50%, 50%)`, {
+      x: Math.cos(radians * i),
+      y: Math.sin(radians * i)
+    }))
   }
+
+  hueRadians += 0.01
 }
 
 // Animation Loop
 function animate() {
   requestAnimationFrame(animate)
-  c.clearRect(0, 0, canvas.width, canvas.height)
+  c.fillStyle = 'rgba(0, 0, 0, 0.1)'
+  c.fillRect(0, 0, canvas.width, canvas.height)
 
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
-  // objects.forEach(object => {
-  //  object.update()
-  // })
+  particles.forEach((particle, index) => {
+    if (particle.ttl < 0) {
+      particles.splice(index, 1)
+    } else {
+      particle.update()
+    }
+
+  })
 }
 
 init()
 animate()
+generateRing()
